@@ -56,6 +56,10 @@ Method is applicable to most popular 2D, 3D and 4D structured data. Basic pipeli
 - `pipeline_3x1d` 3+1D data (dynamical fields)
 
 ----
+### Tutorial
+
+The primary way of running the tutorial is via Google Colab notebook, which is here: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Mark-Kac-Center/MFSCA/blob/main/Workshop.ipynb)
+
 
 ## Dedicated neuroimaging tools
 
