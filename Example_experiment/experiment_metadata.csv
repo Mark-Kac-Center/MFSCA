@@ -1,0 +1,6 @@
+﻿ID;Subject;Session;Cohort;Age;Gender;CDR
+OAS1_0190_MR1;190;1;Middle Aged Control;43;M;0
+OAS1_0268_MR1;268;1;MCI;78;M;1
+OAS1_0363_MR1;363;1;Elderly Control;87;M;0
+OAS1_0419_MR1;419;1;Young Control;21;F;0
+OAS1_0451_MR1;451;1;EMCI;73;M;0.5
