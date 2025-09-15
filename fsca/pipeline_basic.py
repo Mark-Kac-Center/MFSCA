@@ -43,6 +43,10 @@ class base_pipeline:
         self.ghs = None
         self.ghs_res = None
         
+        self._min_scale_ix = None
+        self._max_scale_ix = None
+        self._scale_preset = None
+
         self.alphas = None
         self.fs = None
         self.Ds = None
@@ -616,9 +620,9 @@ class base_pipeline:
         print('calc_mfdfa(): qorders.shape =', self.qorders.shape)
         self._print_sep()
 
-    def _print_verbose_calc_ghurst(self, min_scale_ix, max_scale_ix, scale_preset):
-        print('calc_ghurst(): scale_preset =', scale_preset)
-        print(f'calc_ghurst(): min_scale_ix = {min_scale_ix}, max_scale_ix = {max_scale_ix}')
+    def _print_verbose_calc_ghurst(self):
+        print('calc_ghurst(): scale_preset =', self._scale_preset)
+        print(f'calc_ghurst(): min_scale_ix = {self._min_scale_ix}, max_scale_ix = {self._max_scale_ix}')
         print('calc_ghurst(): ghs.shape =', self.ghs.shape)
         print('calc_ghurst(): ghs_res.shape =', self.ghs_res.shape)
         self._print_sep()
@@ -822,9 +826,13 @@ class pipeline_2d(base_pipeline):
             ghs = ghs.squeeze()
             ghs_res = ghs_res.squeeze()
 
+        self._min_scale_ix = min_scale_ix
+        self._max_scale_ix = max_scale_ix
+        self._scale_preset = scale_preset
+
         self.ghs, self.ghs_res = ghs, ghs_res
 
-        if self.verbose: self._print_verbose_calc_ghurst(min_scale_ix, max_scale_ix, scale_preset)
+        if self.verbose: self._print_verbose_calc_ghurst()
 
     def calc_falpha(self, **kwargs) -> None:
         self.alphas, self.fs = self._calc_single_spectrum(qorders = self.qorders, gh = self.ghs)
@@ -1021,9 +1029,13 @@ class pipeline_2x1d(pipeline_2d):
             ghs = ghs.reshape(fqs_shape[:2]+ghs.shape[-1:])
             ghs_res = ghs.reshape(fqs_shape[:2]+ghs_res.shape[-1:])
 
+        self._min_scale_ix = min_scale_ix
+        self._max_scale_ix = max_scale_ix
+        self._scale_preset = scale_preset
+
         self.ghs, self.ghs_res = ghs, ghs_res
 
-        if self.verbose: self._print_verbose_calc_ghurst(min_scale_ix, max_scale_ix, scale_preset)
+        if self.verbose: self._print_verbose_calc_ghurst()
 
     def calc_falpha(self, **kwargs):
         self.alphas, self.fs = self._calc_batch_spectrum(qorders = self.qorders, ghs = self.ghs)
@@ -1378,9 +1390,13 @@ class pipeline_3d(base_pipeline):
                 ghs = ghs.squeeze()
                 ghs_res = ghs_res.squeeze()
 
+        self._min_scale_ix = min_scale_ix
+        self._max_scale_ix = max_scale_ix
+        self._scale_preset = scale_preset
+
         self.ghs, self.ghs_res = ghs, ghs_res
 
-        if self.verbose: self._print_verbose_calc_ghurst(min_scale_ix, max_scale_ix, scale_preset)
+        if self.verbose: self._print_verbose_calc_ghurst()
 
     def calc_falpha(self, **kwargs):
 
@@ -1631,9 +1647,13 @@ class pipeline_3x1d(pipeline_3d):
             ghs = ghs.reshape(fqs_shape[:2]+ghs.shape[-1:])
             ghs_res = ghs_res.reshape(fqs_shape[:2]+ghs_res.shape[-1:])
 
+        self._min_scale_ix = min_scale_ix
+        self._max_scale_ix = max_scale_ix
+        self._scale_preset = scale_preset
+
         self.ghs, self.ghs_res = ghs, ghs_res
 
-        if self.verbose: self._print_verbose_calc_ghurst(min_scale_ix, max_scale_ix, scale_preset)
+        if self.verbose: self._print_verbose_calc_ghurst()
 
     def calc_falpha(self, **kwargs):
 
