@@ -26,6 +26,9 @@ class base_pipeline:
             qorders: Placeholder for q-order parameters.
             ghs: Placeholder for generalized Hurst parameters.
             ghs_res: Placeholder generalized Hurst parameter residuals.
+            _min_scale_ix: Placeholder for minimum scale index.
+            _max_scale_ix: Placeholder for maximum scale index.
+            _scale_preset: Placeholder for scale preset.
             alphas: Placeholder for multifractal alpha values.
             fs: Placeholder for multifractal f values.
             Ds: Placeholder for multrifractal width D values.
