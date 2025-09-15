@@ -556,7 +556,6 @@ class base_pipeline:
         
         '''
         alpha, f = spectrum(qorders,gh)
-        print(alpha.shape, f.shape)
         return alpha, f     
 
     @staticmethod
