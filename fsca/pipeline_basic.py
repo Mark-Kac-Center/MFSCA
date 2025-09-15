@@ -15,6 +15,24 @@ class base_pipeline:
     def __init__(self,
                  output : str = None,
                  verbose : bool = False) -> None:
+        """
+        Initializes the MFSCA pipeline class.
+        Key attributes:
+            data: Placeholder for input data.
+            data_dim: Dimensionality of the data.
+            sfcs: Placeholder for SFCs (Space-Filling Curves).
+            fqs: Placeholder for fluctuation functions Fq.
+            scales: Placeholder for scale parameters.
+            qorders: Placeholder for q-order parameters.
+            ghs: Placeholder for generalized Hurst parameters.
+            ghs_res: Placeholder generalized Hurst parameter residuals.
+            alphas: Placeholder for multifractal alpha values.
+            fs: Placeholder for multifractal f values.
+            Ds: Placeholder for multrifractal width D values.
+            As: Placeholder for multifractal asymmetry A values.
+            _proc_mode: Internal processing mode.
+            verbose: Verbosity flag.
+        """
 
         self.data = None
         self.data_dim = 0
@@ -59,6 +77,8 @@ class base_pipeline:
         else:
             raise ValueError(f'wrong data shape {data.shape}')
 
+        if self.verbose: self._print_verbose_load_data()
+
     def set_proc_mode(self, **kwargs) -> None:
         if len(self.data.shape) == self.data_dim:
             self._proc_mode = 'single'
@@ -66,6 +86,8 @@ class base_pipeline:
             self._proc_mode = 'batch'
         else:
             raise ValueError(f'cannot set _proc_mode; wrong data.shape = {self.data.shape}')
+        
+        if self.verbose: self._print_verbose_set_proc_mode()
 
     def calc_mfdfa(self):
         pass
@@ -74,9 +96,7 @@ class base_pipeline:
         pass
         
     def calc_falpha(self, **kwargs) -> None:
-        print('warning: calc_falpha implementation is in an alpha stage')
-        self.alphas, self.fs = self._calc_batch_spectrum(qorders = self.qorders, ghs = self.ghs)
-        self.Ds, self.As = self._calc_batch_spectrum_params(alphas = self.alphas, fs = self.fs) 
+        pass
 
     def run(self, data : np.ndarray) -> None:
         pass
@@ -346,7 +366,7 @@ class base_pipeline:
                       qorders : np.ndarray = DEFAULT_QORDERS,
                       window_size_cleaning : int = DEFAULT_WINDOW_SIZE,
                       fit_order : int = DEFAULT_FIT_ORDER,
-                      mfdfa_lib : str = DEFAULT_MFDFA_LIB) -> Tuple[np.ndarray,np.ndarray]:
+                      mfdfa_lib : str = DEFAULT_MFDFA_LIB, **kwargs) -> Tuple[np.ndarray,np.ndarray]:
 
         '''
         Applies the multifractal detrended fluctuation analysis (MFDFA) to a single SFC signal.
@@ -413,7 +433,8 @@ class base_pipeline:
                      qorders : np.ndarray = DEFAULT_QORDERS,
                      window_size_cleaning : int = DEFAULT_WINDOW_SIZE,
                      fit_order : int = DEFAULT_FIT_ORDER,
-                     mfdfa_lib : str = DEFAULT_MFDFA_LIB) -> Tuple[np.ndarray,np.ndarray]:
+                     mfdfa_lib : str = DEFAULT_MFDFA_LIB, 
+                     **kwargs) -> Tuple[np.ndarray,np.ndarray]:
         '''
         Perform the MFDFA on the SFC signals.
         Accepts two types of arrays. A 2D array of size (N,M)
@@ -535,6 +556,7 @@ class base_pipeline:
         
         '''
         alpha, f = spectrum(qorders,gh)
+        print(alpha.shape, f.shape)
         return alpha, f     
 
     @staticmethod
@@ -554,7 +576,7 @@ class base_pipeline:
         
         '''
         D,A = spectrum_params(alpha, f)
-        return alpha, f     
+        return D, A     
 
     @staticmethod
     def _calc_batch_spectrum_params(alphas: np.ndarray, 
@@ -564,6 +586,65 @@ class base_pipeline:
         '''
         Ds, As = mvectorize2(spectrum_params)(alphas,fs)
         return Ds, As
+
+    #2d verbose print methods
+    def _print_sep(self):
+        print('='*40)
+
+    def _print_verbose_load_data(self):
+        print(f'load_data(): data.shape = {self.data.shape}')
+        self._print_sep()
+
+    def _print_verbose_set_proc_mode(self):
+        print(f'set_proc_mode(): _proc_mode = {self._proc_mode}')
+        self._print_sep()
+
+    def _print_verbose_map_data_to_sfc2d(self, sfc_type : str):
+        print(f'map_data_to_sfc2d(): sfc_type = {sfc_type}')
+        print(f'map_data_to_sfc2d(): sfcs.shape = {self.sfcs.shape}')
+        self._print_sep()
+
+    def _print_verbose_calc_mfdfa(self, scales, mfdfa_lib):
+        print('calc_mfdfa(): scales =', scales)
+        print('calc_mfdfa(): mfdfa_lib =', mfdfa_lib)
+        scales_res = self.scales
+        while len(scales_res.shape) > 1:
+            scales_res = scales_res[0]
+        print('calc_mfdfa(): scales resolved =', scales_res)
+        print('calc_mfdfa(): qorders resolved =', self.qorders)
+        print('calc_mfdfa(): fqs.shape =', self.fqs.shape)
+        print('calc_mfdfa(): scales.shape =', self.scales.shape)
+        print('calc_mfdfa(): qorders.shape =', self.qorders.shape)
+        self._print_sep()
+
+    def _print_verbose_calc_ghurst(self, min_scale_ix, max_scale_ix, scale_preset):
+        print('calc_ghurst(): scale_preset =', scale_preset)
+        print(f'calc_ghurst(): min_scale_ix = {min_scale_ix}, max_scale_ix = {max_scale_ix}')
+        print('calc_ghurst(): ghs.shape =', self.ghs.shape)
+        print('calc_ghurst(): ghs_res.shape =', self.ghs_res.shape)
+        self._print_sep()
+
+    def _print_verbose_slice_data(self):
+        print(f'slice_data(): slice_axis = {self.slice_axis}')
+        print(f'slice_data(): sfc_dim = {self.sfc_dim}')
+        print(f'slice_data(): slices.shape = {self.slices.shape}')
+        self._print_sep()
+
+    def _print_verbose_norm_slices(self):
+        print(f'norm_slices(): slices.shape = {self.slices.shape}')
+        self._print_sep()
+
+    def _print_verbose_map_data_to_sfc(self, sfc_type : str):
+        print(f'map_data_to_sfc(): sfc_type = {sfc_type}')
+        print(f'map_data_to_sfc(): sfcs.shape = {self.sfcs.shape}')
+        self._print_sep()
+
+    def _print_verbose_calc_falpha(self):
+        print('calc_falpha(): alphas.shape =', self.alphas.shape)
+        print('calc_falpha(): fs.shape =', self.fs.shape)
+        print('calc_falpha(): Ds.shape =', self.Ds.shape)
+        print('calc_falpha(): As.shape =', self.As.shape)
+        self._print_sep()
 
 class pipeline_2d(base_pipeline):
     '''
@@ -600,10 +681,14 @@ class pipeline_2d(base_pipeline):
 
         '''
 
+
+
         if self._proc_mode == 'single':
             data = np.expand_dims(self.data,0)
         else:
             data = self.data
+
+
 
         if sfc_type == 'hilbert':
             sfcs = pipeline_2d._map_data_to_sfc_hilbert2d(data = data)
@@ -621,6 +706,8 @@ class pipeline_2d(base_pipeline):
             sfcs = sfcs.squeeze()
 
         self.sfcs = sfcs
+
+        if self.verbose: self._print_verbose_map_data_to_sfc2d(sfc_type = sfc_type)
 
     def calc_mfdfa(self,
                    scales : np.ndarray = DEFAULT_SCALES,
@@ -657,7 +744,7 @@ class pipeline_2d(base_pipeline):
         else:
             sfcs = self.sfcs
 
-        fqs, scales = pipeline_2d._calc_batch_mfdfa(sfcs = sfcs,
+        fqs, scales_ = pipeline_2d._calc_batch_mfdfa(sfcs = sfcs,
                                               scales = scales,
                                               qorders = qorders,
                                               mfdfa_lib = mfdfa_lib,
@@ -665,11 +752,13 @@ class pipeline_2d(base_pipeline):
 
         if self._proc_mode == 'single':
             fqs = fqs.squeeze()
-            scales = scales.squeeze()
+            scales_ = scales_.squeeze()
 
         self.fqs = fqs
-        self.scales = scales
+        self.scales = scales_
         self.qorders = qorders
+
+        if self.verbose: self._print_verbose_calc_mfdfa(scales = scales, mfdfa_lib = mfdfa_lib)
 
     def calc_ghurst(self,
                    min_scale_ix : int = None,
@@ -701,9 +790,6 @@ class pipeline_2d(base_pipeline):
         For a default array of orders `qorders` spanned over (-4,4) with step 0.2 without q = 0.0,
         the classic Hurst exponent for q=2 is given by self.ghs[:,29].
         '''
-
-        if self.verbose:
-            print('calc_ghurst()...')
 
         if scale_preset == 'all_scales':
             min_scale_ix = min_scale_ix
@@ -738,7 +824,15 @@ class pipeline_2d(base_pipeline):
             ghs_res = ghs_res.squeeze()
 
         self.ghs, self.ghs_res = ghs, ghs_res
-        
+
+        if self.verbose: self._print_verbose_calc_ghurst(min_scale_ix, max_scale_ix, scale_preset)
+
+    def calc_falpha(self, **kwargs) -> None:
+        self.alphas, self.fs = self._calc_single_spectrum(qorders = self.qorders, gh = self.ghs)
+        self.Ds, self.As = self._calc_single_spectrum_params(alpha = self.alphas, f = self.fs) 
+
+        if self.verbose: self._print_verbose_calc_falpha()
+
     def run(self, data: np.ndarray, **kwargs) -> None:
         self.load_data(data, **kwargs)
         self.set_proc_mode(**kwargs) # set processing mode (single or batch)
@@ -746,6 +840,7 @@ class pipeline_2d(base_pipeline):
         self.map_data_to_sfc2d(**kwargs) # output -> self.sfcs
         self.calc_mfdfa(**kwargs) # output -> self.fqs, self.scales, self.qorders
         self.calc_ghurst(**kwargs) # output -> self.ghs, self.ghs_res
+        self.calc_falpha(**kwargs) # output -> self.alphas, self.fs, self.Ds, self.As
 
 class pipeline_2x1d(pipeline_2d):
     '''
@@ -805,6 +900,8 @@ class pipeline_2x1d(pipeline_2d):
 
         self.sfcs = sfcs
 
+        if self.verbose: self._print_verbose_map_data_to_sfc2d(sfc_type)
+
     def calc_mfdfa(self,
                    scales : np.ndarray = DEFAULT_SCALES,
                    qorders : np.ndarray = DEFAULT_QORDERS,
@@ -840,7 +937,7 @@ class pipeline_2x1d(pipeline_2d):
         else:
             sfcs = self.sfcs
 
-        fqs, scales = pipeline_2x1d._calc_batch_mfdfa(sfcs = sfcs,
+        fqs, scales_ = pipeline_2x1d._calc_batch_mfdfa(sfcs = sfcs,
                                               scales = scales,
                                               qorders = qorders,
                                               mfdfa_lib = mfdfa_lib,
@@ -849,14 +946,16 @@ class pipeline_2x1d(pipeline_2d):
         if self._proc_mode == 'batch':
             fqs_shape = sfcs_shape[:2]+fqs.shape[-2:]
             fqs = fqs.reshape(fqs_shape)
-            scales_shape = sfcs_shape[:2]+scales.shape[-1:]
-            scales = scales.reshape(scales_shape)
+            scales_shape = sfcs_shape[:2]+scales_.shape[-1:]
+            scales_ = scales_.reshape(scales_shape)
             # fqs = fqs.squeeze()
             # scales = scales.squeeze()
 
         self.fqs = fqs
-        self.scales = scales
+        self.scales = scales_
         self.qorders = qorders
+
+        if self.verbose: self._print_verbose_calc_mfdfa(scales = scales, mfdfa_lib = mfdfa_lib)
 
     def calc_ghurst(self,
                    min_scale_ix : int = None,
@@ -888,9 +987,6 @@ class pipeline_2x1d(pipeline_2d):
         For a default array of orders `qorders` spanned over (-4,4) with step 0.2 without q = 0.0,
         the classic Hurst exponent for q=2 is given by self.ghs[:,29].
         '''
-
-        if self.verbose:
-            print('calc_ghurst()...')
 
         if scale_preset == 'all_scales':
             min_scale_ix = min_scale_ix
@@ -927,6 +1023,14 @@ class pipeline_2x1d(pipeline_2d):
             ghs_res = ghs.reshape(fqs_shape[:2]+ghs_res.shape[-1:])
 
         self.ghs, self.ghs_res = ghs, ghs_res
+
+        if self.verbose: self._print_verbose_calc_ghurst(min_scale_ix, max_scale_ix, scale_preset)
+
+    def calc_falpha(self, **kwargs):
+        self.alphas, self.fs = self._calc_batch_spectrum(qorders = self.qorders, ghs = self.ghs)
+        self.Ds, self.As = self._calc_batch_spectrum_params(alphas = self.alphas, fs = self.fs) 
+
+        if self.verbose: self._print_verbose_calc_falpha()
 
 class pipeline_3d(base_pipeline):
     '''
@@ -1032,6 +1136,8 @@ class pipeline_3d(base_pipeline):
         self.slice_axis = slice_axis
         self.sfc_dim = {'x':2,'y':2,'z':2,None:3,'none':3,'None':3}[slice_axis]
 
+        if self.verbose: self._print_verbose_slice_data()
+
     def norm_slices(self, **kwargs):
 
         if self._proc_mode == 'single' and self.sfc_dim == 2:
@@ -1055,6 +1161,8 @@ class pipeline_3d(base_pipeline):
             pass
 
         self.slices = slices
+
+        if self.verbose: self._print_verbose_norm_slices()
 
     def map_data_to_sfc(self,
                         sfc_type : str = DEFAULT_SFC_TYPE,
@@ -1108,6 +1216,8 @@ class pipeline_3d(base_pipeline):
 
         self.sfcs = sfcs
 
+        if self.verbose: self._print_verbose_map_data_to_sfc(sfc_type)
+
     def calc_mfdfa(self,
                    scales : np.ndarray = DEFAULT_SCALES,
                    qorders : np.ndarray = DEFAULT_QORDERS,
@@ -1153,7 +1263,7 @@ class pipeline_3d(base_pipeline):
                 sfcs = np.expand_dims(self.sfcs,0)
 
 
-        fqs, scales = super()._calc_batch_mfdfa(sfcs = sfcs,
+        fqs, scales_ = super()._calc_batch_mfdfa(sfcs = sfcs,
                                               scales = scales,
                                               qorders = qorders,
                                               mfdfa_lib = mfdfa_lib)
@@ -1162,7 +1272,7 @@ class pipeline_3d(base_pipeline):
 
             if self._proc_mode == 'batch':
                 fqs = fqs.reshape(sfcs_shape[:-1]+fqs.shape[-2:])
-                scales = scales.reshape(sfcs_shape[:-1]+scales.shape[-1:])
+                scales_ = scales_.reshape(sfcs_shape[:-1]+scales_.shape[-1:])
             else:
                 pass
 
@@ -1172,11 +1282,13 @@ class pipeline_3d(base_pipeline):
                 pass
             else:
                 fqs = fqs.squeeze()
-                scales = scales.squeeze()
+                scales_ = scales_.squeeze()
 
         self.fqs = fqs
-        self.scales = scales
+        self.scales = scales_
         self.qorders = qorders
+
+        if self.verbose: self._print_verbose_calc_mfdfa(scales = scales, mfdfa_lib = mfdfa_lib)
 
     def calc_ghurst(self,
                    min_scale_ix : int = None,
@@ -1269,6 +1381,29 @@ class pipeline_3d(base_pipeline):
 
         self.ghs, self.ghs_res = ghs, ghs_res
 
+        if self.verbose: self._print_verbose_calc_ghurst(min_scale_ix, max_scale_ix, scale_preset)
+
+    def calc_falpha(self, **kwargs):
+
+        if self.sfc_dim == 2:
+
+            if self._proc_mode == 'batch':
+                ghs, ghs_shape = super().pack_array(self.ghs)
+            else:
+                ghs = self.ghs
+
+        elif self.sfc_dim == 3:
+
+            if self._proc_mode == 'batch':
+                ghs = self.ghs
+            else:
+                ghs = np.expand_dims(self.ghs,0)
+
+        self.alphas, self.fs = self._calc_batch_spectrum(qorders = self.qorders, ghs = ghs)
+        self.Ds, self.As = self._calc_batch_spectrum_params(alphas = self.alphas, fs = self.fs) 
+
+        if self.verbose: self._print_verbose_calc_falpha()
+
     def run(self, data: np.ndarray, **kwargs) -> None:
         self.load_data(data,**kwargs)
         self.set_proc_mode(**kwargs) # set processing mode (single or batch)
@@ -1277,8 +1412,8 @@ class pipeline_3d(base_pipeline):
         self.map_data_to_sfc(**kwargs) # output -> self.sfcs
         self.calc_mfdfa(**kwargs) # output -> self.fqs, self.scales, self.qorders
         self.calc_ghurst(**kwargs) # output -> self.ghs, self.ghs_res
-        # self.calc_falpha(**kwargs) # output -> self.alphas, self.fs, self.Ds, self.As
-        
+        self.calc_falpha(**kwargs) # output -> self.alphas, self.fs, self.Ds, self.As
+
 class pipeline_3x1d(pipeline_3d):
 
     def __init__(self,*args,**kwargs) -> None:
@@ -1305,6 +1440,8 @@ class pipeline_3x1d(pipeline_3d):
         self.slice_axis = slice_axis
         self.sfc_dim = {'x':2,'y':2,'z':2,None:3,'none':3,'None':3}[slice_axis]
 
+        if self.verbose: self._print_verbose_slice_data()
+
     def norm_slices(self, **kwargs):
 
         if self._proc_mode == 'single' and self.sfc_dim == 2:
@@ -1327,8 +1464,9 @@ class pipeline_3x1d(pipeline_3d):
         elif self._proc_mode == 'batch' and self.sfc_dim == 3:
             slices = slices.reshape(slices_shape[:2]+slices.shape[-3:])
 
-
         self.slices = slices
+
+        if self.verbose: self._print_verbose_norm_slices()
 
     def map_data_to_sfc(self,
                         sfc_type : str = DEFAULT_SFC_TYPE,
@@ -1376,6 +1514,8 @@ class pipeline_3x1d(pipeline_3d):
 
         self.sfcs = sfcs
 
+        if self.verbose: self._print_verbose_map_data_to_sfc(sfc_type)
+
     def calc_mfdfa(self,
                    scales : np.ndarray = DEFAULT_SCALES,
                    qorders : np.ndarray = DEFAULT_QORDERS,
@@ -1391,7 +1531,7 @@ class pipeline_3x1d(pipeline_3d):
         elif self._proc_mode == 'batch' and self.sfc_dim == 3:
             sfcs, sfcs_shape = super().pack_array(self.sfcs,final_dims=1)
 
-        fqs, scales = super()._calc_batch_mfdfa(sfcs = sfcs,
+        fqs, scales_ = super()._calc_batch_mfdfa(sfcs = sfcs,
                                               scales = scales,
                                               qorders = qorders,
                                               mfdfa_lib = mfdfa_lib,
@@ -1399,19 +1539,21 @@ class pipeline_3x1d(pipeline_3d):
 
         if self._proc_mode == 'single' and self.sfc_dim == 2:
             fqs = fqs.reshape(sfcs_shape[:2]+fqs.shape[-2:])
-            scales = scales.reshape(sfcs_shape[:2]+scales.shape[-1:])
+            scales_ = scales_.reshape(sfcs_shape[:2]+scales_.shape[-1:])
         elif self._proc_mode == 'batch' and self.sfc_dim == 2:
             fqs = fqs.reshape(sfcs_shape[:3]+fqs.shape[-2:])
-            scales = scales.reshape(sfcs_shape[:3]+scales.shape[-1:])
+            scales_ = scales_.reshape(sfcs_shape[:3]+scales_.shape[-1:])
         elif self._proc_mode == 'single' and self.sfc_dim == 3:
             pass
         elif self._proc_mode == 'batch' and self.sfc_dim == 3:
             fqs = fqs.reshape(sfcs_shape[:2]+fqs.shape[-2:])
-            scales = scales.reshape(sfcs_shape[:2]+scales.shape[-1:])
+            scales_ = scales_.reshape(sfcs_shape[:2]+scales_.shape[-1:])
 
         self.fqs = fqs
-        self.scales = scales
+        self.scales = scales_
         self.qorders = qorders
+
+        if self.verbose: self._print_verbose_calc_mfdfa(scales = scales, mfdfa_lib = mfdfa_lib)
 
     def calc_ghurst(self,
                    min_scale_ix : int = None,
@@ -1443,9 +1585,6 @@ class pipeline_3x1d(pipeline_3d):
         For a default array of orders `qorders` spanned over (-4,4) with step 0.2 without q = 0.0,
         the classic Hurst exponent for q=2 is given by self.ghs[:,29].
         '''
-
-        if self.verbose:
-            print('calc_ghurst()...')
 
         if scale_preset == 'all_scales':
             min_scale_ix = min_scale_ix
@@ -1494,3 +1633,29 @@ class pipeline_3x1d(pipeline_3d):
             ghs_res = ghs_res.reshape(fqs_shape[:2]+ghs_res.shape[-1:])
 
         self.ghs, self.ghs_res = ghs, ghs_res
+
+        if self.verbose: self._print_verbose_calc_ghurst(min_scale_ix, max_scale_ix, scale_preset)
+
+    def calc_falpha(self, **kwargs):
+
+        if self._proc_mode == 'single' and self.sfc_dim == 2:
+            ghs, ghs_shape = base_pipeline.pack_array(self.ghs,final_dims=1)
+        elif self._proc_mode == 'batch' and self.sfc_dim == 2:
+            ghs, ghs_shape = base_pipeline.pack_array(self.ghs,final_dims=2)
+        elif self._proc_mode == 'single' and self.sfc_dim == 3:
+            ghs = self.ghs
+            ghs_shape = ghs.shape
+        elif self._proc_mode == 'batch' and self.sfc_dim == 3:
+            ghs, ghs_shape = base_pipeline.pack_array(self.ghs,final_dims=2)
+
+        self.alphas, self.fs = self._calc_batch_spectrum(qorders = self.qorders, ghs = ghs)
+        self.Ds, self.As = self._calc_batch_spectrum_params(alphas = self.alphas, fs = self.fs) 
+
+        alphas_fs_shape = ghs_shape[:-1] + (ghs_shape[-1]-1,)
+        Ds_As_shape = ghs_shape[:-1]
+        self.alphas = base_pipeline.unpack_array(self.alphas, alphas_fs_shape)
+        self.fs = base_pipeline.unpack_array(self.fs, alphas_fs_shape)
+        self.Ds = base_pipeline.unpack_array(self.Ds, Ds_As_shape)
+        self.As = base_pipeline.unpack_array(self.As, Ds_As_shape)
+
+        if self.verbose: self._print_verbose_calc_falpha()

@@ -47,9 +47,6 @@ class pipeline_mri(pipeline_3d):
         If store_mem = True, the resulting scan is stored as a numpy array in `self.scan`.
         '''
 
-        if self.verbose:
-            print('load_scan()...')
-
         if isinstance(scan_file,(str,Path)):
             scan_file = Path(scan_file)
             if not scan_file.exists():
@@ -63,12 +60,20 @@ class pipeline_mri(pipeline_3d):
                 self.scan = nib.load(self.scan_file).get_fdata()
 
         elif isinstance(scan_file,np.ndarray):
+            self.scan_file = 'numpy.ndarray'
             self.scan = scan_file
+
+        if self.verbose: self._print_verbose_load_scan()
 
     def run(self, scan_file : Union[str,Path,np.ndarray], **kwargs):
 
         self.load_scan(scan_file,**kwargs)
         super().run(data = self.scan,**kwargs)
+
+    def _print_verbose_load_scan(self):
+        print('load_scan(): scan_file =', self.scan_file)
+        print('load_scan(): scan.shape =', self.scan.shape if self.scan is not None else None)
+        self._print_sep()
 
 class pipeline_fmri(pipeline_3x1d):
 
