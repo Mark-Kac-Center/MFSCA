@@ -1,14 +1,14 @@
 # Multi-Fractal Space-filling Curve Analysis (MFSCA) package
 
 
-Fractal Space-Curve Analysis is a method designed for the analysis of multidimensional data. FSCA combines the [Space-Filling Curve](https://en.wikipedia.org/wiki/Space-filling_curve) mapping for dimensionality reduction with the [Detrended Fluctuation Analysis](https://www.sciencedirect.com/science/article/pii/S0378437102013833) fractal analysis for interpretable results.
+(Multi-)Fractal Space-filling Curve Analysis is a method designed for the analysis of multidimensional data. MFSCA combines the [Space-Filling Curve](https://en.wikipedia.org/wiki/Space-filling_curve) mapping for dimensionality reduction with the [Detrended Fluctuation Analysis](https://www.sciencedirect.com/science/article/pii/S0378437102013833) fractal analysis for interpretable results.
 <p align="center">
   <img alt="FSCA flowchart" src="imgs/flowchart.png" width="40%" >
 </p>
 
 <!-- ![FSCA flowchart]( | width=100) -->
 
-Method is suitable for diverse data formats with special submodule for neuroimaging data. An example of FSCA application to identification of Alzheimer's Disease:
+Method is suitable for diverse data formats with special submodule for neuroimaging data. An example of MFSCA application to identification of Alzheimer's Disease:
 <p align="center">
   <img src="https://github.com/grelade/fractal-alzheimer/blob/master/dataplot.png" alt="Example: Alzheimers' disease" width="70%" >
 </p>
@@ -34,7 +34,7 @@ Please cite as:
 
 ## Usage
 
-### Apply FSCA to MRI scan
+### Apply MFSCA to MRI scan
 
 For an out-of-the-box analysis of a structural MRI scan:
 ```
@@ -43,11 +43,11 @@ pipe = fsca.neuro.pipeline_mri()
 pipe.run(scan_file = 'test-data/scanfile.nii.gz', slice_axis = 'z')
 hurst_profile = pipe.get_result()
 ```
-The outcome of FSCA is a Hurst profile measuring local fractal properties of the MRI scan along the `slice_axis` axis.
+The outcome of MFSCA is a Hurst profile measuring local fractal properties of the MRI scan along the `slice_axis` axis.
 
 ----
 
-### FSCA for generic data structures
+### MFSCA for generic data structures
 Method is applicable to most popular 2D, 3D and 4D structured data. Basic pipelines are:
 
 - `pipeline_2d` : 2D data
@@ -76,7 +76,7 @@ hurst_profile = pipe.get_result()
 
 ## Requirements
 
-TO use the FSCA method: 
+TO use the MFSCA method: 
 ```
 pip install -r requirements.txt
 ```
