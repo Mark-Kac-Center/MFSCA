@@ -1,4 +1,4 @@
-# Multi-Fractal Space-Curve Analysis (FSCA) package
+# Multi-Fractal Space-filling Curve Analysis (MFSCA) package
 
 
 Fractal Space-Curve Analysis is a method designed for the analysis of multidimensional data. FSCA combines the [Space-Filling Curve](https://en.wikipedia.org/wiki/Space-filling_curve) mapping for dimensionality reduction with the [Detrended Fluctuation Analysis](https://www.sciencedirect.com/science/article/pii/S0378437102013833) fractal analysis for interpretable results.
